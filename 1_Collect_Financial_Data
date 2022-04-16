@@ -50,7 +50,7 @@ print(combined_down_sector)
 otp_data_ind = {
     'searchType' : '1',
     'mktId' : 'ALL', 
-    'trdDd' : '20220412',
+    'trdDd' : biz_date,
     'csvxls_isNo' : 'false',
     'name'  : 'fileDown',
     'url'   : 'dbms/MDC/STAT/standard/MDCSTAT03501'
