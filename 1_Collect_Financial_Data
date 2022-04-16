@@ -5,19 +5,33 @@ import pandas as pd
 
 gen_otp_url = 'http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd'
 down_url    = 'http://data.krx.co.kr/comm/fileDn/download_csv/download.cmd'
-otp_data = {
-    'mktId' : 'STK',
-    'trdDd' : '20220412',
-    'money' : '1',
-    'csvxls_isNo' : 'false',
-    'name'  : 'fileDown',
-    'url'   : 'dbms/MDC/STAT/standard/MDCSTAT03901'
-}
-headers = {'Referer' : 'http://data.krx.co.kr/contents/MDC/MDI/mdiLoader'}
+headers     = {'Referer' : 'http://data.krx.co.kr/contents/MDC/MDI/mdiLoader'}
 
-otp = requests.post(gen_otp_url, otp_data, headers=headers).text
+mktId = ['STK', 'KSQ'] # 코스피 STK, 코스닥 KSQ
 
-down_sector_KS = requests.post(down_url, {'code' : otp}, headers=headers)
-sector_KS = pd.read_csv(BytesIO(down_sector_KS.content), encoding='EUC-KR')
+combined_down_sector = pd.DataFrame()
 
-print(sector_KS)
+for m in mktId:
+
+    otp_data = {
+        'mktId' : m, 
+        'trdDd' : '20220412',
+        'money' : '1',
+        'csvxls_isNo' : 'false',
+        'name'  : 'fileDown',
+        'url'   : 'dbms/MDC/STAT/standard/MDCSTAT03901'
+    }
+    
+    otp = requests.post(gen_otp_url, otp_data, headers=headers).text
+    
+    if m == 'STK':
+        down_sector_KS = requests.post(down_url, {'code' : otp}, headers=headers)
+        sector_KS = pd.read_csv(BytesIO(down_sector_KS.content), encoding='EUC-KR')
+        combined_down_sector = pd.concat([combined_down_sector, sector_KS])
+
+    if m == 'KSQ':
+        down_sector_KQ = requests.post(down_url, {'code' : otp}, headers=headers)
+        sector_KQ = pd.read_csv(BytesIO(down_sector_KQ.content), encoding='EUC-KR')
+        combined_down_sector = pd.concat([combined_down_sector, sector_KQ])
+
+print(combined_down_sector)
